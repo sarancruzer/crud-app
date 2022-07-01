@@ -5,14 +5,11 @@ import userService from '../services/user.service';
 import { useNavigate, useParams } from "react-router-dom";
 import {
     Formik,
-    FormikHelpers,
-    FormikProps,
     Form,
     Field,
-    FieldProps,
     ErrorMessage,
 } from 'formik';
-import { Button, Col, Container, FormGroup, Input, Label, Row } from 'reactstrap';
+import { Button, Col, Container, FormGroup, Label } from 'reactstrap';
 import * as Yup from 'yup';
 import { User } from './UserList';
 
@@ -26,8 +23,6 @@ interface MyFormValues {
 export const UserEdit: React.FC = () => {
     let navigate = useNavigate();
     const params = useParams()
-    console.log('🚀 ~ file: UserEdit.tsx ~ line 28 ~ params', params);
-
     const [formValue, setFormValue] = useState({
         firstName: "",
         lastName: "",
@@ -35,24 +30,19 @@ export const UserEdit: React.FC = () => {
         mobileNumber: ""
     });
 
+    let initialValues: MyFormValues = { firstName: '', lastName: '', email: '', mobileNumber: '' };
+
     useEffect(() => {
-        const id = params['id'];
-        userService.getUserById(id).then((res: User) => {
-            console.log('🚀 ~ file: UserEdit.tsx ~ line 41 ~ userService.getUserById ~ res', res);
-            setFormValue((prevState) => {
-                console.log('🚀 ~ file: UserEdit.tsx ~ line 38 ~ setFormValue ~ prevState', prevState);
+        userService.getUserById(params['id']).then((res: User) => {
+            setFormValue((prevState: any) => {
                 return {
                     ...prevState,
-                    res,
-                };
+                    ...res
+                }
             });
         });
-    }, [])
 
-
-    const initialValues: MyFormValues = { firstName: '', lastName: '', email: '', mobileNumber: '' };
-
-
+    }, [initialValues])
 
     const handleChange = (event: any, setFieldValue: any) => {
         const { name, value } = event.target;
@@ -65,14 +55,11 @@ export const UserEdit: React.FC = () => {
         });
     };
 
-    const userSubmit = (fields: any) => {
-        console.log('🚀 ~ file: UserCreate.tsx ~ line 46 ~ authenticate ~ fields', fields);
-        userService.createUser(fields).then((res: any) => {
-            console.log('🚀 ~ file: UserCreate.tsx ~ line 50 ~ userService.createUser ~ res', res);
+    const userUpdate = (fields: any) => {
+        userService.updateUser(params['id'], fields).then((res: any) => {
             navigate('/');
         }, (error: any) => {
             const resMessage = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
-            console.log('🚀 ~ file: UserCreate.tsx ~ line 53 ~ userService.createUser ~ resMessage', resMessage);
         });
     }
 
@@ -89,9 +76,10 @@ export const UserEdit: React.FC = () => {
         <Container className="bg-light border mt-5">
             <Col md={10}>
                 <Formik
+                    enableReinitialize={true}
                     initialValues={initialValues}
                     validationSchema={validationSchema}
-                    onSubmit={(fields: any) => { userSubmit(fields) }}
+                    onSubmit={(fields: any) => { userUpdate(fields) }}
                     render={({ errors, status, touched, setFieldValue, setFieldTouched }) => (
 
                         <Form>
@@ -99,7 +87,7 @@ export const UserEdit: React.FC = () => {
                                 <Label for="firstName">
                                     First name
                                 </Label>
-                                <Field name="firstName" type="text" className={'form-control' + (errors.firstName && touched.firstName ? ' is-invalid' : '')} onChange={(e: any) => handleChange(e, setFieldValue)} placeholder="Enter firstmame" />
+                                <Field name="firstName" type="text" value={formValue.firstName} className={'form-control' + (errors.firstName && touched.firstName ? ' is-invalid' : '')} onChange={(e: any) => handleChange(e, setFieldValue)} placeholder="Enter firstmame" />
                                 <ErrorMessage name="firstName" component="div" className="invalid-feedback" />
                             </FormGroup>
 
@@ -107,7 +95,7 @@ export const UserEdit: React.FC = () => {
                                 <Label for="lastName">
                                     Lastname
                                 </Label>
-                                <Field name="lastName" type="text" className={'form-control' + (errors.lastName && touched.lastName ? ' is-invalid' : '')} placeholder="Enter lastName" />
+                                <Field name="lastName" type="text" value={formValue.lastName} className={'form-control' + (errors.lastName && touched.lastName ? ' is-invalid' : '')} placeholder="Enter lastName" />
                                 <ErrorMessage name="lastName" component="div" className="invalid-feedback" />
                             </FormGroup>
 
@@ -115,7 +103,7 @@ export const UserEdit: React.FC = () => {
                                 <Label for="email">
                                     Email
                                 </Label>
-                                <Field name="email" type="text" className={'form-control' + (errors.email && touched.email ? ' is-invalid' : '')} placeholder="Enter email" />
+                                <Field name="email" type="text" value={formValue.email} className={'form-control' + (errors.email && touched.email ? ' is-invalid' : '')} placeholder="Enter email" />
                                 <ErrorMessage name="email" component="div" className="invalid-feedback" />
                             </FormGroup>
 
@@ -123,7 +111,7 @@ export const UserEdit: React.FC = () => {
                                 <Label for="mobileNumber">
                                     Mobile Number
                                 </Label>
-                                <Field name="mobileNumber" type="text" className={'form-control' + (errors.mobileNumber && touched.mobileNumber ? ' is-invalid' : '')} placeholder="Enter Mobile number" />
+                                <Field name="mobileNumber" type="text" value={formValue.mobileNumber} className={'form-control' + (errors.mobileNumber && touched.mobileNumber ? ' is-invalid' : '')} placeholder="Enter Mobile number" />
                                 <ErrorMessage name="mobileNumber" component="div" className="invalid-feedback" />
                             </FormGroup>
                             <FormGroup>
